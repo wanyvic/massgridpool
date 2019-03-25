@@ -19,7 +19,47 @@ endif
 	yasm -f x64 -f elf64 -X gnu -g dwarf2 -D LINUX -o $@ $<
 
 noinst_LIBRARIES = libckpool.a
-libckpool_a_SOURCES = libckpool.c libckpool.h sha2.c sha2.h
+libckpool_a_SOURCES = libckpool.c libckpool.h sha2.c sha2.h \
+  crypto/w_blake.c \
+  crypto/w_bmw.c \
+  crypto/w_cubehash.c \
+  crypto/w_echo.c \
+  crypto/w_fugue.c \
+  crypto/w_groestl.c \
+  crypto/w_hamsi.c \
+  crypto/w_aes_helper.c \
+  crypto/w_jh.c \
+  crypto/w_keccak.c \
+  crypto/w_luffa.c \
+  crypto/w_shavite.c \
+  crypto/w_simd.c \
+  crypto/w_sha2big.c \
+  crypto/w_haval.c \
+  crypto/w_panama.c \
+  crypto/w_blake256.c \
+  crypto/w_skein256.c \
+  crypto/w_shabal.c \
+  crypto/w_skein.c \
+  crypto/w_blake.h \
+  crypto/w_bmw.h \
+  crypto/w_cubehash.h \
+  crypto/w_echo.h \
+  crypto/w_fugue.h \
+  crypto/w_groestl.h \
+  crypto/w_hamsi.h \
+  crypto/w_hamsi_helper.h \
+  crypto/w_jh.h \
+  crypto/w_keccak.h \
+  crypto/w_luffa.h \
+  crypto/w_shavite.h \
+  crypto/w_simd.h \
+  crypto/w_sha2big.h \
+  crypto/w_haval.h \
+  crypto/w_panama.h \
+  crypto/w_blake256.h \
+  crypto/w_skein256.h \
+  crypto/w_shabal.h \
+  crypto/w_skein.h
 libckpool_a_LIBADD = $(native_objs)
 
 bin_PROGRAMS = ckpool ckpmsg notifier

@@ -44,5 +44,9 @@ ltmain.sh
 .libs/
 
 libtool
+.vscode
 
-
+src/crypto/.dirstamp
+src/libckpool.a
+src/notifier
+src/sha256_code_release/sha256_avx2_rorx2.A

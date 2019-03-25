@@ -30,6 +30,7 @@
 #include "connector.h"
 #include "generator.h"
 
+#include "crypto/jumphash.h"
 /* Consistent across all pool instances */
 static const char *workpadding = "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
 static const char *scriptsig_header = "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff";
@@ -618,9 +619,9 @@ static void generate_coinbase(const ckpool_t *ckp, workbase_t *wb)
 
 	// Generation value
 	g64 = wb->coinbasevalue;
-	if (ckp->donvalid) {
-		d64 = g64 / 200; // 0.5% donation
-		g64 -= d64; // To guarantee integers add up to the original coinbasevalue
+	if (wb->fmasternode) {
+		d64 = wb->masternodevalue; // 0.5% donation
+		// g64 -= d64; // To guarantee integers add up to the original coinbasevalue
 		wb->coinb2bin[wb->coinb2len++] = 2 + wb->insert_witness;
 	} else
 		wb->coinb2bin[wb->coinb2len++] = 1 + wb->insert_witness;
@@ -645,14 +646,16 @@ static void generate_coinbase(const ckpool_t *ckp, workbase_t *wb)
 		wb->coinb2len += witnessdata_size;
 	}
 
-	if (ckp->donvalid) {
+	if (wb->fmasternode) {
 		u64 = (uint64_t *)&wb->coinb2bin[wb->coinb2len];
 		*u64 = htole64(d64);
 		wb->coinb2len += 8;
 
-		wb->coinb2bin[wb->coinb2len++] = sdata->dontxnlen;
-		memcpy(wb->coinb2bin + wb->coinb2len, sdata->dontxnbin, sdata->dontxnlen);
-		wb->coinb2len += sdata->dontxnlen;
+		wb->coinb2bin[wb->coinb2len++] = 25;
+		char masternodescript[25];
+		hex2bin(masternodescript,wb->masternodescript,25);
+		memcpy(wb->coinb2bin + wb->coinb2len, masternodescript, 25);
+		wb->coinb2len += 25;
 	}
 
 	wb->coinb2len += 4; // Blank lock
@@ -1931,8 +1934,21 @@ share_diff(char *coinbase, const uchar *enonce1bin, const workbase_t *wb, const 
 	data32 = (uint32_t *)data;
 	swap32 = (uint32_t *)swap;
 	flip_80(swap32, data32);
-	sha256(swap, 80, hash1);
-	sha256(hash1, 32, hash);
+
+	uint8_t output0[64],output1[64];
+	char a[160];
+	__bin2hex(a,swap,80);
+	sha256(swap, 76, hash1);
+	int id = (((uint16_t *)swap)[2])%18;
+	Bin2Hex((uint8_t*)&hash1,output0,32);
+	((uint32_t *)output0)[14]^=((uint32_t *)output0)[15];
+	((uint32_t *)output0)[15]= ((uint32_t *)swap)[19];
+	jump18[id](output0,output1);
+	sha256(output1, 64, hash);
+
+	// 	char b[64];
+	// __bin2hex(b,hash,32);
+	// LOGWARNING("hash: %s",b);
 
 	/* Calculate the diff of the share here */
 	return diff_from_target(hash);

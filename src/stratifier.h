@@ -45,6 +45,9 @@ struct genwork {
 	char bbversion[12];
 	char nbit[12];
 	uint64_t coinbasevalue;
+	char masternodescript[50];
+	uint64_t masternodevalue;
+	bool fmasternode;
 	int height;
 	char *flags;
 	int txns;
